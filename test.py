@@ -111,14 +111,14 @@ if auth_status:
     render_snapshot_controls(df_scored, weights, age_threshold)
 
     with st.expander("📤 Export Reports & Scored Data"):
-        st.subheader("📊 Scored Data Table")
         st.download_button(
             label="⬇️ Download Scored Data (CSV)",
             data=df_scored.to_csv(index=False).encode(),
             file_name=f"{username}_scored_data.csv",
             mime="text/csv"
         )
-        st.dataframe(df_scored, use_container_width=True)
+        with st.expander("📋 View Scored Data"):
+            st.dataframe(df_scored, use_container_width=True)
 
         st.subheader("📄 Diagnostic Reports")
         full_mode = st.toggle("🧠 Include Full Diagnosis (Score Table + Risk Analysis)", value=True)

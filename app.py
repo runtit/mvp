@@ -79,14 +79,14 @@ render_snapshot_controls(df_scored, weights, age_threshold)
 
 with st.expander("📤 Export Reports & Scored Data"):
     # 1. 评分表格和 CSV 导出
-    st.subheader("📊 Scored Data Table")
     st.download_button(
         label="⬇️ Download Scored Data (CSV)",
         data=df_scored.to_csv(index=False).encode(),
         file_name="scored_data.csv",
         mime="text/csv"
     )
-    st.dataframe(df_scored, use_container_width=True)
+    with st.expander("📋 View Scored Data"):
+        st.dataframe(df_scored, use_container_width=True)
 
     # 2. 选择报告类型
     st.subheader("📄 Diagnostic Reports")
