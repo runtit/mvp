@@ -5,3 +5,4 @@ numpy
 plotly
 scikit_learn
 fpdf2
+openpyxl

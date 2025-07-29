@@ -1,7 +1,7 @@
-import tempfile
-
-import pandas as pd
 from fpdf import FPDF
+from typing import List
+import pandas as pd
+import tempfile
 
 def png_to_pdf_bytes(png_bytes: bytes, title: str) -> bytes:
     pdf = FPDF()
@@ -52,11 +52,6 @@ def detect_risks(df_scored):
         risks.append(" Customer retention below 50%")
 
     return risks
-
-from fpdf import FPDF
-from typing import List
-import pandas as pd
-import tempfile
 
 class VelocityPDF(FPDF):
     def header(self):

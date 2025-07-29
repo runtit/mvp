@@ -1,6 +1,7 @@
 from constant import SCORING_RULES
 import streamlit as st
 import plotly.express as px
+from constant import EXPLANATION_TEMPLATES
 
 def get_teasers(latest_row: dict) -> list:
     """Return list of teaser strings for critically abnormal metrics."""
@@ -17,7 +18,6 @@ def get_teasers(latest_row: dict) -> list:
                 teasers.append((metric, f"⚠️ {metric.replace('_', ' ')} critically high"))
     return teasers
 
-from constant import EXPLANATION_TEMPLATES
 
 def render_drilldown(df, metric: str, show_explanation=True):
     st.markdown(f"#### 📉 Detail for `{metric}`")
