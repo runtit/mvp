@@ -53,12 +53,12 @@ TREND_COLORS = {
 
 # Dashboard Sections: grouped metrics
 DASHBOARD_TITLES = {
-    "financial": "📈 Financial ",
-    "sales": "💼 Sales / Marketing ",
-    "operational": "⚙️ Operations & Product",
-    "talent": "👥 Talent / HR",
-    "customer": "🌟 Customer / Brand",
-    "risk": "🚨 Risk "
+    "financial": "Financial ",
+    "sales": "Sales / Marketing ",
+    "operational": "Operations & Product",
+    "talent": "Talent / HR",
+    "customer": "Customer / Brand",
+    "risk": "Risk "
 }
 
 # Score Labels (Y-axis title, tooltips, etc.)
@@ -66,20 +66,20 @@ SCORE_LABELS = {
     "composite": "Composite Score",
     "delta": "Momentum",
     "trend": {
-        "up": "📈 Up", "flat": "→ Flat", "down": "📉 Down"
+        "up": "Up", "flat": "Flat", "down": "Down"
     }
 }
 
 TEXT_LABELS = {
-    "velocity_map_title": "📊 Velocity Map (Cartesian Quadrants)",
+    "velocity_map_title": " Velocity Map (Cartesian Quadrants)",
     "x_axis_label": "Startup Age (Months)",
     "y_axis_label": "Composite Score",
-    "export_button": "📤 Export CSV",
+    "export_button": "Export CSV",
     "composite_score_delta": "Difference in Composite Score",
-    "snapshots_section": "🗂 Snapshots",
-    "early_stage_cutoff": "🕐 Early-Stage Cutoff (months)",
-    "weight_section_title": "🎯 Actual propotion(%)",
-    "weight_expander_title": "❔ How do the weights work?",
+    "snapshots_section": "Snapshots",
+    "early_stage_cutoff": "Early-Stage Cutoff (months)",
+    "weight_section_title": "Actual propotion(%)",
+    "weight_expander_title": "How do the weights work?",
     "default_score_threshold": "60",
     "score_threshold_label": "Score Threshold",
     "trend_up": "Trend: up",
@@ -87,7 +87,7 @@ TEXT_LABELS = {
     "trend_down": "Trend: down",
     "quadrant_title_prefix": "Quadrant: ",
     "metric_score_breakdown": "Metric / W% / Score",
-    "compare_with_prefix": "📊 Compare with ",
+    "compare_with_prefix": "Compare with ",
 }
 
 SCORING_RULES = {
@@ -152,7 +152,7 @@ EXPLANATION_TEMPLATES = {
 
 
 SUPPORTING_METRICS = {
-    # 📈 Financial
+    # Financial
     "RevenueGrowthRate_%": ["MRR_kUSD", "ChurnRate_%", "MarketPenetration_%"],
     "MRR_kUSD": ["CustomerRetentionRate_%", "ChurnRate_%", "BurnRate_kUSD"],
     "BurnRate_kUSD": ["GrossMargin_%", "MRR_kUSD", "CashFlowStability"],
@@ -162,31 +162,31 @@ SUPPORTING_METRICS = {
     "NetMargin_%": ["GrossMargin_%", "BurnRate_kUSD"],
     "CashFlowStability": ["BurnRate_kUSD", "MRR_kUSD"],
 
-    # 💼 Sales / Marketing
+    # Sales / Marketing
     "LeadConversionRate_%": ["MarketPenetration_%", "CAC_USD", "SalesCycleLength_days"],
     "SalesCycleLength_days": ["LeadConversionRate_%", "RevenueGrowthRate_%"],
     "CustomerRetentionRate_%": ["ChurnRate_%", "NPS", "SupportResolutionTime_hrs"],
     "ChurnRate_%": ["CustomerRetentionRate_%", "ProductAdoptionRate_%", "NPS"],
     "MarketPenetration_%": ["LeadConversionRate_%", "RevenueGrowthRate_%"],
 
-    # ⚙️ Operations & Product
+    #  Operations & Product
     "OperationalEfficiency_%": ["SystemDowntime_hrs", "EmployeeProductivity"],
     "ProductAdoptionRate_%": ["UserEngagement_%", "ChurnRate_%"],
     "UserEngagement_%": ["ProductAdoptionRate_%", "OperationalEfficiency_%"],
     "SystemDowntime_hrs": ["OperationalEfficiency_%"],
 
-    # 👥 Talent / HR
+    # Talent / HR
     "HiringVelocity_hires": ["EmployeeTurnoverRate_%"],
     "EmployeeTurnoverRate_%": ["EmployeeProductivity", "DiversityInclusion_%"],
     "EmployeeProductivity": ["OperationalEfficiency_%", "EngagementScore_%"],
     "DiversityInclusion_%": ["EmployeeTurnoverRate_%", "EmployeeProductivity"],
 
-    # 🌟 Customer / Brand
+    # Customer / Brand
     "NPS": ["CustomerRetentionRate_%", "ChurnRate_%"],
     "SupportResolutionTime_hrs": ["NPS", "ChurnRate_%"],
     "PRSentiment_%": ["CustomerRetentionRate_%", "NPS"],
 
-    # 🚨 Risk
+    # Risk
     "RegulatoryComplianceRisk_%": ["DebtToEquityRatio", "CashFlowStability"],
     "MarketCompetitiveTrends_%": ["ChurnRate_%", "MRR_kUSD"],
     "DebtToEquityRatio": ["BurnRate_kUSD", "NetMargin_%", "CashFlowStability"],

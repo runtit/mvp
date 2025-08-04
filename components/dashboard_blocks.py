@@ -26,18 +26,18 @@ def diagnose(metric: str, value: float) -> str:
     tip = ""
     if rule["hib"]:  # Higher Is Better
         if value < rule["bad"]:
-            tip = f"🔻 {metric}: critically low ({value})"
+            tip = f" {metric}: critically low ({value})"
         elif value < rule["good"]:
-            tip = f"🟡 {metric}: below target ({value})"
+            tip = f" {metric}: below target ({value})"
     else:  # Lower Is Better
         if value > rule["bad"]:
-            tip = f"🔻 {metric}: critically high ({value})"
+            tip = f" {metric}: critically high ({value})"
         elif value > rule["good"]:
-            tip = f"🟡 {metric}: above ideal ({value})"
+            tip = f" {metric}: above ideal ({value})"
 
     if tip:
         action = rule.get("action")
-        return f"{tip}" + (f" → 💡 {action}" if action else "")
+        return f"{tip}" + (f" →  {action}" if action else "")
     return ""
 
 def render_block(df, title, metric_list, chart_type="line", height=280):

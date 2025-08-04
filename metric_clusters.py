@@ -1,6 +1,6 @@
 # metric_cluster.py
 
-# 📈 Financial metrics
+#  Financial metrics
 FINANCIAL_METRICS = [
     "RevenueGrowthRate_%",
     "MRR_kUSD",
@@ -12,7 +12,7 @@ FINANCIAL_METRICS = [
     "CashFlowStability"
 ]
 
-# 💼 Sales & Marketing metrics
+#  Sales & Marketing metrics
 SALES_MARKETING_METRICS = [
     "LeadConversionRate_%",
     "SalesCycleLength_days",
@@ -21,7 +21,7 @@ SALES_MARKETING_METRICS = [
     "MarketPenetration_%"
 ]
 
-# ⚙️ Operations & Product metrics
+# ️ Operations & Product metrics
 OPERATIONS_PRODUCT_METRICS = [
     "OperationalEfficiency_%",
     "ProductAdoptionRate_%",
@@ -29,7 +29,7 @@ OPERATIONS_PRODUCT_METRICS = [
     "SystemDowntime_hrs"
 ]
 
-# 👥 Talent / HR metrics
+#  Talent / HR metrics
 TALENT_HR_METRICS = [
     "HiringVelocity_hires",
     "EmployeeTurnoverRate_%",
@@ -37,14 +37,14 @@ TALENT_HR_METRICS = [
     "DiversityInclusion_%"
 ]
 
-# 🌟 Customer / Brand metrics
+#  Customer / Brand metrics
 CUSTOMER_BRAND_METRICS = [
     "NPS",
     "SupportResolutionTime_hrs",
     "PRSentiment_%"
 ]
 
-# 🚨 Risk metrics
+#  Risk metrics
 RISK_METRICS = [
     "RegulatoryComplianceRisk_%",
     "MarketCompetitiveTrends_%",

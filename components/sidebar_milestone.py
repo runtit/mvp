@@ -1,7 +1,7 @@
 import streamlit as st
 
 def render_milestone_controls(df):
-    st.sidebar.markdown("### 🏁 Milestone Logic")
+    st.sidebar.markdown("###  Milestone Logic")
     enabled = st.sidebar.toggle("Enable milestone-based stage")
 
     if not enabled:
@@ -14,7 +14,6 @@ def render_milestone_controls(df):
 
     numeric_cols = df.select_dtypes(include="number").columns.tolist()
     field = st.sidebar.selectbox("Milestone Field", numeric_cols)
-    # 在 Streamlit 中写法
     op = st.sidebar.radio(
         "Operator",
         options=[">=", "<="],

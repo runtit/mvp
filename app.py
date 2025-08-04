@@ -22,14 +22,14 @@ df = clean_df(df)
 
 missing_cols = [c for c in SCORING_RULES if c not in df.columns]
 if missing_cols:
-    st.warning(f"⚠️ Missing columns treated as NaN: {', '.join(missing_cols)}")
+    st.warning(f"️ Missing columns treated as NaN: {', '.join(missing_cols)}")
 
 bad_rows = df["__row_has_nan"].sum()
 if bad_rows:
-    st.info(f"ℹ️ {bad_rows} rows contain NaNs and are labeled **Incomplete**.")
+    st.info(f"️ {bad_rows} rows contain NaNs and are labeled **Incomplete**.")
 
-st.success(f"Loaded {len(df)} rows ✅")
-with st.expander("📋 View Raw Data"):
+st.success(f"Loaded {len(df)} rows ")
+with st.expander("View Raw Data"):
     st.dataframe(df, use_container_width=True)
 
 # ========== 权重 + 阈值设置 ==========
@@ -44,7 +44,7 @@ else:
     try:
         df_scored = compute_scores(df, norm_weights, age_threshold, score_threshold, milestone_config)
     except Exception as e:
-        st.error(f"❌ Scoring failed: {e}")
+        st.error(f" Scoring failed: {e}")
         st.stop()
 
 # ========== 宏观子图 ==========
@@ -77,23 +77,23 @@ velocity_fig = render_velocity_map(
 # ========== 快照系统 ==========
 render_snapshot_controls(df_scored, weights, age_threshold)
 
-with st.expander("📤 Export Reports & Scored Data"):
+with st.expander(" Export Reports & Scored Data"):
     # 1. 评分表格和 CSV 导出
     st.download_button(
-        label="⬇️ Download Scored Data (CSV)",
+        label="️ Download Scored Data (CSV)",
         data=df_scored.to_csv(index=False).encode(),
         file_name="scored_data.csv",
         mime="text/csv"
     )
-    with st.expander("📋 View Scored Data"):
+    with st.expander(" View Scored Data"):
         st.dataframe(df_scored, use_container_width=True)
 
     # 2. 选择报告类型
-    st.subheader("📄 Diagnostic Reports")
+    st.subheader(" Diagnostic Reports")
 
-    full_mode = st.toggle("🧠 Include Full Diagnosis (Score Table + Risk Analysis)", value=True)
+    full_mode = st.toggle(" Include Full Diagnosis (Score Table + Risk Analysis)", value=True)
 
-    if st.button("📤 Generate PDF Report"):
+    if st.button(" Generate PDF Report"):
         png_bytes = velocity_fig.to_image(format="png")
 
         if full_mode:
@@ -111,7 +111,7 @@ with st.expander("📤 Export Reports & Scored Data"):
             file_name = "velocity_map_simple.pdf"
 
         st.download_button(
-            label="⬇️ Download PDF",
+            label="️ Download PDF",
             data=pdf_bytes,
             file_name=file_name,
             mime="application/pdf"

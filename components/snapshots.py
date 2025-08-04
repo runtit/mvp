@@ -7,11 +7,11 @@ import numpy as np
 import plotly.graph_objects as go
 
 def render_snapshot_controls(df_scored, weights, age_threshold):
-    if st.button("💾 Save Snapshot"):
+    if st.button(" Save Snapshot"):
         snap_name = sm.save(df_scored, {"weights": weights, "age_threshold": age_threshold})
         st.success(f"Snapshot {snap_name} saved!")
 
-    st.sidebar.markdown("### 🗂 Snapshots")
+    st.sidebar.markdown("###  Snapshots")
     snaps = ["—"] + sm.list_snapshots()
     sel = st.sidebar.selectbox("Select a snapshot", snaps)
 
@@ -26,7 +26,7 @@ def render_snapshot_controls(df_scored, weights, age_threshold):
 
         if col2.button("Compare", key="cmp"):
             snap_df, _ = sm.load(sel)
-            st.subheader(f"📊 Compare with {sel}")
+            st.subheader(f" Compare with {sel}")
             st.dataframe(pd.concat({
                 "Current": df_scored.set_index("Month"),
                 sel: snap_df.set_index("Month")

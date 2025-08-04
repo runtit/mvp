@@ -78,17 +78,17 @@ def render_velocity_map(df_scored,
         clickmode="event+select"
     )
 
-    zoom = st.checkbox("🔍 Zoom to data (un-check for full 0-100 scale)", value=True)
+    zoom = st.checkbox(" Zoom to data (un-check for full 0-100 scale)", value=True)
     fig.update_yaxes(range=[y_min, y_max] if zoom else [0, 100])
     st.plotly_chart(fig, use_container_width=False)
 
     # === Add Risk Teasers after chart ===
-    st.markdown("### 🛑 Risk Teasers")
+    st.markdown("###  Risk Teasers")
     latest = df_scored.iloc[-1].to_dict()
     teasers = get_teasers(latest)
 
     if not teasers:
-        st.success("✅ No critical risks detected in latest snapshot.")
+        st.success(" No critical risks detected in latest snapshot.")
     else:
         for metric, teaser in teasers:
             with st.expander(teaser):

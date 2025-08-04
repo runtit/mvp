@@ -12,7 +12,7 @@ def get_teasers(latest_row: dict) -> list:
             continue
         if rule["hib"]:
             if value < rule["bad"]:
-                teasers.append((metric, f"⚠️ {metric.replace('_', ' ')} critically low"))
+                teasers.append((metric, f"️ {metric.replace('_', ' ')} critically low"))
         else:
             if value > rule["bad"]:
                 teasers.append((metric, f"⚠️ {metric.replace('_', ' ')} critically high"))
@@ -20,7 +20,7 @@ def get_teasers(latest_row: dict) -> list:
 
 
 def render_drilldown(df, metric: str, show_explanation=True):
-    st.markdown(f"#### 📉 Detail for `{metric}`")
+    st.markdown(f"####  Detail for `{metric}`")
 
     # 主指标趋势图
     if metric in df.columns:
@@ -37,7 +37,7 @@ def render_drilldown(df, metric: str, show_explanation=True):
         st.markdown(f"**Why it matters:** {tpl['why']}")
         st.markdown(f"**Suggested actions:** {tpl['action']}")
     elif show_explanation:
-        st.info("ℹ️ No custom diagnosis available for this metric.")
+        st.info("️ No custom diagnosis available for this metric.")
 
     from constant import SUPPORTING_METRICS
 
