@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 
+import pdfplumber
 import streamlit as st
 import pandas as pd
 
@@ -29,18 +30,40 @@ def get_input_df() ->pd.DataFrame:
 
 
     st.sidebar.header("Data Input")
-    upload_file = st.sidebar.file_uploader("Upload CSV / XLSX", ["csv","xlsx"],key="file_upload_main")
+    upload_file = st.sidebar.file_uploader("Upload CSV / XLSX / PDF", ["csv","xlsx", "PDF"], key="file_upload_main")
     demo = st.sidebar.button("Generate Demo")
+    st.sidebar.download_button(
+        "Download empty template",
+        pd.DataFrame(columns=MANUAL_COLS).to_csv(index=False).encode(),
+        "startup_template.csv",
+        mime="text/csv"
+    )
     manual_on = st.sidebar.toggle("manual entry form")
+
 
     if demo:
         st.session_state.active_df = generate_synthetic_company_data(seed=42)
         st.sidebar.success("Demo data generated!")
 
     if upload_file:
-        st.session_state.active_df = pd.read_csv(upload_file) \
-            if upload_file.name.endswith("csv") \
-            else pd.read_excel(upload_file)
+        filename = upload_file.name.lower()
+        if filename.endswith("csv"):
+            st.session_state.active_df = pd.read_csv(upload_file)
+        elif filename.endswith("xlsx"):
+            st.session_state.active_df = pd.read_excel(upload_file)
+        elif filename.endswith("pdf"):
+            df_pdf = parse_pdf_flexible(upload_file, min_cols=1)
+            if df_pdf.empty:
+                st.warning(" No readable tables detected in the uploaded PDF.")
+                st.stop()
+            else:
+                st.session_state.active_df = df_pdf
+                st.sidebar.success(f"Loaded PDF with {df_pdf.shape[0]} rows and {df_pdf.shape[1]} columns")
+
+        else:
+            st.warning("Unsupported file format. Please upload CSV, XLSX, or PDF.")
+            st.stop()
+
         st.sidebar.success(f"Loaded {upload_file.name}")
 
     if manual_on:
@@ -99,10 +122,62 @@ def _render_manual_form() -> None:
             "manual_data.csv",
             mime="text/csv"
         )
+import pdfplumber
+import pandas as pd
 
-    st.sidebar.download_button(
-        "Download empty template",
-        pd.DataFrame(columns= MANUAL_COLS).to_csv(index=False).encode(),
-        "startup_template.csv",
-        mime="text/csv"
-    )
+def parse_pdf_flexible(upload_file, min_cols: int = 1) -> pd.DataFrame:
+    """
+    通用 PDF 表格解析：
+    - 表头相同 → 跨页 → 按行追加
+    - 表头不同 → 宽表 → 按列追加
+    - 自动清洗列名 & 最后补齐缺失指标
+    """
+    df = pd.DataFrame()
+    last_header = None
+
+    with pdfplumber.open(upload_file) as pdf:
+        for page_num, page in enumerate(pdf.pages, start=1):
+            rows = []
+            tables = page.extract_tables()
+            if tables:
+                for table in tables:
+                    rows.extend(table)
+            else:
+                text = page.extract_text()
+                if text:
+                    for line in text.splitlines():
+                        parts = line.split()
+                        if len(parts) >= min_cols:
+                            rows.append(parts)
+
+            if not rows:
+                continue
+
+            # 🔑 清洗列名（去掉空格和隐藏字符）
+            header = [h.strip().replace("\u200b", "") for h in rows[0]]
+            data = rows[1:]
+            df_page = pd.DataFrame(data, columns=header)
+
+            if df.empty:
+                df = df_page
+                last_header = header
+            else:
+                if header == last_header:
+                    df = pd.concat([df, df_page], ignore_index=True)
+                else:
+                    max_len = max(len(df), len(df_page))
+                    df = df.reindex(range(max_len)).reset_index(drop=True)
+                    df_page = df_page.reindex(range(max_len)).reset_index(drop=True)
+                    df = pd.concat([df, df_page], axis=1)
+                    last_header = header
+
+    try:
+        from constant import SCORING_RULES
+        for col in SCORING_RULES:
+            if col not in df.columns:
+                df[col] = None
+    except ImportError:
+        pass  
+
+    return df
+
