@@ -51,7 +51,7 @@ def get_input_df() ->pd.DataFrame:
     if st.session_state.active_df is not None:
         return st.session_state.active_df
 
-    st.info("📂 Upload a file, generate demo data, or add rows manually.")
+    st.info(" Upload a file, generate demo data, or add rows manually.")
     st.stop()
 
 def _render_manual_form() -> None:
