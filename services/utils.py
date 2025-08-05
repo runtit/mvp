@@ -22,3 +22,5 @@ def clean_df(df_raw: pd.DataFrame) -> pd.DataFrame:
         df = df.sort_values("Month").reset_index(drop=True)
 
     return df
+
+

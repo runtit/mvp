@@ -124,7 +124,19 @@ def _render_manual_form() -> None:
         )
 
 
-def parse_pdf_flexible(upload_file, min_cols: int = 1) -> pd.DataFrame:
+import pdfplumber
+import pandas as pd
+import streamlit as st
+
+def parse_pdf_flexible(upload_file, min_cols: int = 1, validate: bool = True) -> pd.DataFrame:
+    if validate:
+        with pdfplumber.open(upload_file) as pdf:
+            has_table = any(page.extract_tables() for page in pdf.pages)
+            if not has_table:
+                st.error("No detectable tables found in the PDF. "
+                         "Please upload a PDF exported from Excel/Sheets with clear table borders.")
+                st.stop()
+
     df = pd.DataFrame()
     last_header = None
 
@@ -132,23 +144,26 @@ def parse_pdf_flexible(upload_file, min_cols: int = 1) -> pd.DataFrame:
         for page_num, page in enumerate(pdf.pages, start=1):
             rows = []
             tables = page.extract_tables()
-            if tables:
-                for table in tables:
+            if not tables:
+                continue
+
+            for table in tables:
+                if table and any(any(cell for cell in row) for row in table):
                     rows.extend(table)
-            else:
-                text = page.extract_text()
-                if text:
-                    for line in text.splitlines():
-                        parts = line.split()
-                        if len(parts) >= min_cols:
-                            rows.append(parts)
 
             if not rows:
                 continue
 
-            header = [h.strip().replace("\u200b", "") for h in rows[0]]
-            data = rows[1:]
-            df_page = pd.DataFrame(data, columns=header)
+            for potential_header in rows:
+                if any(cell and cell.strip() for cell in potential_header):
+                    header = [h.strip().replace("\u200b", "") if h else "" for h in potential_header]
+                    rows = rows[rows.index(potential_header) + 1:]
+                    break
+            else:
+                continue
+
+            df_page = pd.DataFrame(rows, columns=header)
+            df_page = df_page.loc[:, ~df_page.columns.str.contains("^Unnamed")]
 
             if df.empty:
                 df = df_page
@@ -169,7 +184,7 @@ def parse_pdf_flexible(upload_file, min_cols: int = 1) -> pd.DataFrame:
             if col not in df.columns:
                 df[col] = None
     except ImportError:
-        pass  
+        pass
 
     return df
 
