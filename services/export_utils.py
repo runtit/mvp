@@ -117,7 +117,7 @@ class VelocityPDF(FPDF):
 
                 aspect_ratio = img_height / img_width
                 display_width = page_width
-                display_height = display_width * aspect_ratio * 0.75
+                display_height = display_width * aspect_ratio
 
                 if self.get_y() + display_height > 250:
                     self.add_page()

@@ -200,7 +200,7 @@ def render_block_for_pdf(df, title, metric_list, chart_type="line", height=280):
             height=height,
         )
 
-    else:  # 默认折线图
+    else:
         df = df.sort_values("Month")
         fig = px.line(
             df,
