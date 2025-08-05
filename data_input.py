@@ -51,7 +51,7 @@ def get_input_df() ->pd.DataFrame:
         elif filename.endswith("xlsx"):
             st.session_state.active_df = pd.read_excel(upload_file)
         elif filename.endswith("pdf"):
-            df_pdf = parse_pdf_flexible(upload_file, min_cols=1)
+            df_pdf = parse_pdf_flexible(upload_file)
             if df_pdf.empty:
                 st.warning(" No readable tables detected in the uploaded PDF.")
                 st.stop()
@@ -128,7 +128,7 @@ import pdfplumber
 import pandas as pd
 import streamlit as st
 
-def parse_pdf_flexible(upload_file, min_cols: int = 1, validate: bool = True) -> pd.DataFrame:
+def parse_pdf_flexible(upload_file, validate: bool = True) -> pd.DataFrame:
     if validate:
         with pdfplumber.open(upload_file) as pdf:
             has_table = any(page.extract_tables() for page in pdf.pages)
