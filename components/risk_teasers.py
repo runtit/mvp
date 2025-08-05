@@ -15,22 +15,21 @@ def get_teasers(latest_row: dict) -> list:
                 teasers.append((metric, f"️ {metric.replace('_', ' ')} critically low"))
         else:
             if value > rule["bad"]:
-                teasers.append((metric, f"⚠️ {metric.replace('_', ' ')} critically high"))
+                teasers.append((metric, f"️ {metric.replace('_', ' ')} critically high"))
     return teasers
 
 
 def render_drilldown(df, metric: str, show_explanation=True):
     st.markdown(f"####  Detail for `{metric}`")
 
-    # 主指标趋势图
     if metric in df.columns:
         fig = px.line(df, x="Month", y=metric, markers=True, title=f"{metric} Trend")
+        fig.update_xaxes(type="category")
         fig.update_layout(height=300)
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("No historical data for this metric.")
 
-    # 加入个性化说明
     tpl = EXPLANATION_TEMPLATES.get(metric)
     if show_explanation and tpl:
         st.markdown(f"**What's happening:** {tpl['happening']}")

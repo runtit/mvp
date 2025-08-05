@@ -40,7 +40,6 @@ def get_input_df() ->pd.DataFrame:
     )
     manual_on = st.sidebar.toggle("manual entry form")
 
-
     if demo:
         st.session_state.active_df = generate_synthetic_company_data(seed=42)
         st.sidebar.success("Demo data generated!")
@@ -76,6 +75,7 @@ def get_input_df() ->pd.DataFrame:
 
     st.info(" Upload a file, generate demo data, or add rows manually.")
     st.stop()
+
 
 def _render_manual_form() -> None:
     with st.sidebar.expander("Add new row"):
@@ -122,16 +122,9 @@ def _render_manual_form() -> None:
             "manual_data.csv",
             mime="text/csv"
         )
-import pdfplumber
-import pandas as pd
+
 
 def parse_pdf_flexible(upload_file, min_cols: int = 1) -> pd.DataFrame:
-    """
-    通用 PDF 表格解析：
-    - 表头相同 → 跨页 → 按行追加
-    - 表头不同 → 宽表 → 按列追加
-    - 自动清洗列名 & 最后补齐缺失指标
-    """
     df = pd.DataFrame()
     last_header = None
 
@@ -153,7 +146,6 @@ def parse_pdf_flexible(upload_file, min_cols: int = 1) -> pd.DataFrame:
             if not rows:
                 continue
 
-            # 🔑 清洗列名（去掉空格和隐藏字符）
             header = [h.strip().replace("\u200b", "") for h in rows[0]]
             data = rows[1:]
             df_page = pd.DataFrame(data, columns=header)

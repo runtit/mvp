@@ -130,7 +130,7 @@ if auth_status:
                 score_table = generate_score_table(df_scored, SCORING_RULES)
                 quadrant, trend, composite_score = extract_diagnostic_info(df_scored)
                 risks = detect_risks(df_scored)
-                pdf_bytes = build_full_pdf(png_bytes, score_table, quadrant, trend, composite_score, risks)
+                pdf_bytes = build_full_pdf(png_bytes, score_table, quadrant, trend, composite_score, risks, df)
                 file_name = f"{username}_velocity_map_diagnostic.pdf"
             else:
                 pdf_bytes = png_to_pdf_bytes(png_bytes, title="Velocity Map Report")

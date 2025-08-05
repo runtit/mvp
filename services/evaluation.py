@@ -18,9 +18,9 @@ def _normalize(val:float,rule:dict)->float:
 def _row_score(row: pd.Series, weights: Dict[str, float]) -> float:
     total, w_sum = 0.0, 0.0
     for m, w in weights.items():
-        if m not in row:          # 可选列缺失直接跳过
+        if m not in row:
             continue
-        score = _normalize(row[m], SCORING_RULES[m])   # 可能 NaN
+        score = _normalize(row[m], SCORING_RULES[m])
         if not np.isnan(score):
             total += score * w
             w_sum += w
@@ -45,12 +45,10 @@ def evaluate(df, weights, age_threshold=12, score_threshold=60, milestone_config
     out = df.copy()
     out["CompositeScore"] = out.apply(_row_score, axis=1, weights=weights)
 
-    # 添加标准分列
     for m in weights:
         out[f"S_{m}"] = out[m].apply(lambda v: _normalize(v, SCORING_RULES[m]))
         out[f"W_{m}"] = weights[m] * 100
 
-    # 拖后腿指标
     def _weakest_metric(row):
         scores = {
             m: row[f"S_{m}"] * weights[m]
@@ -66,7 +64,6 @@ def evaluate(df, weights, age_threshold=12, score_threshold=60, milestone_config
             .str.replace("_kUSD", "", regex=False)
     )
 
-    # ✅ milestone logic → 构造 _is_mature 列
     out["_is_mature"] = False
     if milestone_config and milestone_config.get("enabled"):
         field = milestone_config.get("field")
@@ -81,24 +78,19 @@ def evaluate(df, weights, age_threshold=12, score_threshold=60, milestone_config
             else:
                 raise ValueError("Unsupported milestone operator")
 
-            # ✅ 取首次满足条件的位置及其后所有
             met_indices = out.index[mature_mask]
             if len(met_indices) > 0:
                 first_idx = met_indices[0]
                 out.loc[first_idx:, "_is_mature"] = True
     else:
-        # 默认使用年龄 cutoff 判断
         out["_is_mature"] = out["Month"] >= age_threshold
 
-    # ③ 判象限
     def _label(r):
         if np.isnan(r["CompositeScore"]):
             return "Incomplete"
         return _quadrant_rule(r["CompositeScore"], score_threshold, r["_is_mature"])
 
     out["Quadrant"] = out.apply(_label, axis=1)
-
-    # ④ 趋势线
     out["Delta"] = out["CompositeScore"].diff()
     out.loc[out.index[0], "Delta"] = 0
     out["Trend"] = pd.cut(out["Delta"], [-np.inf, -0.5, 0.5, np.inf], labels=["down", "flat", "up"])

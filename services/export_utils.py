@@ -1,7 +1,17 @@
+import textwrap
+
+from PIL import Image
 from fpdf import FPDF
 from typing import List
 import pandas as pd
 import tempfile
+
+from components.dashboard_blocks import render_block_for_pdf, DEFAULT_CHART_TYPES
+from constant import DASHBOARD_TITLES
+from metric_clusters import ALL_METRIC_CLUSTERS
+from io import BytesIO
+
+
 
 def png_to_pdf_bytes(png_bytes: bytes, title: str) -> bytes:
     pdf = FPDF()
@@ -15,9 +25,8 @@ def png_to_pdf_bytes(png_bytes: bytes, title: str) -> bytes:
 
     pdf.image(tmp_file_path, x=10, y=30, w=180)
 
-    return bytes(pdf.output(dest="S"))  # 👈 关键在这
+    return bytes(pdf.output(dest="S"))
 
-# 构造评分表格（供 PDF 报告使用）
 def generate_score_table(df_scored, scoring_rules):
     return pd.DataFrame([
         {
@@ -29,14 +38,12 @@ def generate_score_table(df_scored, scoring_rules):
         for m in scoring_rules
     ])
 
-# 获取象限、趋势、总分
 def extract_diagnostic_info(df_scored):
     quadrant = df_scored["Quadrant"].iloc[-1] if "Quadrant" in df_scored else "Unknown"
     trend = df_scored["VelocityTrend"].iloc[-1] if "VelocityTrend" in df_scored else "Flat"
     composite_score = df_scored["CompositeScore"].iloc[-1] if "CompositeScore" in df_scored else 0
     return quadrant, trend, composite_score
 
-# 风险提示逻辑（可拓展）
 def detect_risks(df_scored):
     risks = []
     latest = df_scored.iloc[-1]
@@ -52,6 +59,7 @@ def detect_risks(df_scored):
         risks.append(" Customer retention below 50%")
 
     return risks
+
 
 class VelocityPDF(FPDF):
     def header(self):
@@ -84,11 +92,57 @@ class VelocityPDF(FPDF):
             self.cell(col_widths[3], 8, str(row["Score"]), border=1)
             self.ln()
 
+    def add_all_blocks_to_pdf(self, df):
+        page_width = self.w - 2 * self.l_margin  # 可用宽度
+
+        for module, metrics in ALL_METRIC_CLUSTERS.items():
+            title, png_bytes, diags = render_block_for_pdf(
+                df,
+                DASHBOARD_TITLES[module],
+                metrics,
+                chart_type=DEFAULT_CHART_TYPES.get(module, "line"),
+            )
+
+            if self.get_y() > 220:
+                self.add_page()
+                self.set_y(30)
+
+            self.set_font("Helvetica", "B", 11)
+            self.cell(0, 10, title, ln=True)
+
+            if png_bytes:
+                img_stream = BytesIO(png_bytes)
+                img = Image.open(img_stream)
+                img_width, img_height = img.size
+
+                aspect_ratio = img_height / img_width
+                display_width = page_width
+                display_height = display_width * aspect_ratio * 0.75
+
+                if self.get_y() + display_height > 250:
+                    self.add_page()
+                    self.set_y(30)
+
+                y_before = self.get_y()
+                self.image(img_stream, x=self.l_margin, y=y_before, w=display_width, h=display_height)
+                self.set_y(y_before + display_height + 5)
+
+            if diags:
+                if self.get_y() > 250 - len(diags) * 6:
+                    self.add_page()
+                    self.set_y(30)
+
+                self.set_font("Helvetica", "", 9)
+                for d in diags:
+                    if not d:
+                        continue
+                    self.cell(page_width, 6, "- " + d, ln=True)
+                self.ln(8)
+
     def add_diagnosis(self, quadrant: str, trend: str, composite_score: float, risks: List[str]):
-        # 避免在页底输出导致重叠
         if self.get_y() > 240:
             self.add_page()
-            self.set_y(30)  # ✅ 设置合理的起始 Y 坐标（30 比较合适）
+            self.set_y(30)
 
         self.ln(5)
         self.set_font("Helvetica", "B", 10)
@@ -114,11 +168,13 @@ def build_full_pdf(
     quadrant: str,
     trend: str,
     composite_score: float,
-    risks: List[str]
+    risks: List[str],
+    df: pd.DataFrame
 ) -> bytes:
     pdf = VelocityPDF()
     pdf.add_page()
     pdf.add_velocity_map(png_bytes)
     pdf.add_score_table(score_df)
     pdf.add_diagnosis(quadrant, trend, composite_score, risks)
+    pdf.add_all_blocks_to_pdf(df)
     return bytes(pdf.output(dest="S"))

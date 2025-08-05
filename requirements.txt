@@ -7,3 +7,5 @@ scikit_learn
 fpdf2
 openpyxl
 kaleido==0.2.1
+pillow
+pdfplumber

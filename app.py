@@ -32,12 +32,10 @@ st.success(f"Loaded {len(df)} rows ")
 with st.expander("View Raw Data"):
     st.dataframe(df, use_container_width=True)
 
-# ========== 权重 + 阈值设置 ==========
 weights, norm_weights, age_threshold = render_weights_and_thresholds(SCORING_RULES)
 milestone_config = render_milestone_controls(df)
 score_threshold = 60
 
-# ========== 打分 ==========
 if "_loaded_df" in st.session_state:
     df_scored = st.session_state.pop("_loaded_df")
 else:
@@ -47,18 +45,14 @@ else:
         st.error(f" Scoring failed: {e}")
         st.stop()
 
-# ========== 宏观子图 ==========
 render_all_blocks(df)
 
-# ========== 构造 hover 数据 ==========
 metric_cols = list(SCORING_RULES)
 customdata = build_customdata(df_scored, metric_cols)
 hover_tmpl = build_hovertemplate(metric_cols)
 
-# ========== 趋势线构造 ==========
 seg_dict = build_trend_segments(df_scored)
 
-# ========== Velocity Map 渲染 ==========
 velocity_fig = render_velocity_map(
     df_scored=df_scored,
     customdata=customdata,
@@ -74,11 +68,9 @@ velocity_fig = render_velocity_map(
     milestone_threshold=milestone_config["threshold"],
 )
 
-# ========== 快照系统 ==========
 render_snapshot_controls(df_scored, weights, age_threshold)
 
 with st.expander(" Export Reports & Scored Data"):
-    # 1. 评分表格和 CSV 导出
     st.download_button(
         label="️ Download Scored Data (CSV)",
         data=df_scored.to_csv(index=False).encode(),
@@ -88,7 +80,6 @@ with st.expander(" Export Reports & Scored Data"):
     with st.expander(" View Scored Data"):
         st.dataframe(df_scored, use_container_width=True)
 
-    # 2. 选择报告类型
     st.subheader(" Diagnostic Reports")
 
     full_mode = st.toggle(" Include Full Diagnosis (Score Table + Risk Analysis)", value=True)
@@ -97,16 +88,14 @@ with st.expander(" Export Reports & Scored Data"):
         png_bytes = velocity_fig.to_image(format="png")
 
         if full_mode:
-            # 完整报告
             score_table = generate_score_table(df_scored, SCORING_RULES)
             quadrant, trend, composite_score = extract_diagnostic_info(df_scored)
             risks = detect_risks(df_scored)
 
-            pdf_bytes = build_full_pdf(png_bytes, score_table, quadrant, trend, composite_score, risks)
+            pdf_bytes = build_full_pdf(png_bytes, score_table, quadrant, trend, composite_score, risks,df)
 
             file_name = "velocity_map_diagnostic.pdf"
         else:
-            # 简版报告
             pdf_bytes = png_to_pdf_bytes(png_bytes, title="Velocity Map Report")
             file_name = "velocity_map_simple.pdf"
 
