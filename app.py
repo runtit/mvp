@@ -1,12 +1,10 @@
-# app.py
-
 import streamlit as st
 
 from components.sidebar_milestone import render_milestone_controls
 from data_input import get_input_df
 from services.export_utils import png_to_pdf_bytes, generate_score_table, extract_diagnostic_info, detect_risks, \
     build_full_pdf
-from services.utils import clean_df
+from services.utils import clean_df, render_brand_logo
 from constant import SCORING_RULES
 from services.scoring import compute_scores, build_customdata, build_hovertemplate
 from services.trend import build_trend_segments
@@ -16,17 +14,54 @@ from components.snapshots import render_snapshot_controls
 from components.sidebar_controls import render_weights_and_thresholds
 from constant import TREND_COLORS, QUADRANT_CONFIG
 
-# ========== 数据加载 ==========
+render_brand_logo(where="sidebar", width=100)
+
 df = get_input_df()
 df = clean_df(df)
 
-missing_cols = [c for c in SCORING_RULES if c not in df.columns]
-if missing_cols:
-    st.warning(f"️ Missing columns treated as NaN: {', '.join(missing_cols)}")
+import pandas as pd
+
+st.sidebar.markdown("### Month Range (Snapshot)")
+
+month_num = None
+if "Month" in df.columns:
+    month_num = pd.to_numeric(df["Month"], errors="coerce")
+
+if month_num is None or not month_num.notna().any():
+    st.sidebar.caption("No valid numeric 'Month' found; snapshot disabled.")
+    st.session_state.pop("snap_active", None)
+    st.session_state.pop("snap_range", None)
+else:
+    min_m = int(month_num.min())
+    max_m = int(month_num.max())
+
+    start_m, end_m = st.sidebar.slider(
+        "Select months (inclusive)",
+        min_value=min_m,
+        max_value=max_m,
+        value=(min_m, max_m),
+        step=1,
+    )
+
+    c1, c2 = st.sidebar.columns(2)
+    if c1.button("Apply Snapshot"):
+        st.session_state["snap_active"] = True
+        st.session_state["snap_range"] = (int(start_m), int(end_m))
+
+    if c2.button("Clear"):
+        st.session_state["snap_active"] = False
+        st.session_state["snap_range"] = None
+
+    if st.session_state.get("snap_active") and st.session_state.get("snap_range"):
+        sm, em = st.session_state["snap_range"]
+        mask = month_num.between(sm, em, inclusive="both")
+        df = df.loc[mask].copy()
+        st.caption(f"Snapshot active: Month {sm} → {em}")
+
 
 bad_rows = df["__row_has_nan"].sum()
 if bad_rows:
-    st.info(f"️ {bad_rows} rows contain NaNs and are labeled **Incomplete**.")
+    st.info(f"️ {bad_rows} rows contain NaNs and are labeled.")
 
 st.success(f"Loaded {len(df)} rows ")
 with st.expander("View Raw Data"):
@@ -52,6 +87,7 @@ customdata = build_customdata(df_scored, metric_cols)
 hover_tmpl = build_hovertemplate(metric_cols)
 
 seg_dict = build_trend_segments(df_scored)
+
 
 velocity_fig = render_velocity_map(
     df_scored=df_scored,

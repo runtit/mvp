@@ -96,7 +96,7 @@ def render_block(df, title, metric_list, chart_type="line", height=280):
                 "Bigger and more balanced means stronger operations overall."
             )
 
-        else:  # 默认折线图
+        else:
             fig = px.line(
                 df,
                 x="Month",

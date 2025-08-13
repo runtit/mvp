@@ -5,6 +5,7 @@ import streamlit as st
 
 from components.risk_teasers import get_teasers, render_drilldown
 from constant import TEXT_LABELS
+from services.utils import render_logo_with_title
 
 
 def render_velocity_map(df_scored,
@@ -19,7 +20,9 @@ def render_velocity_map(df_scored,
     milestone_op,
     milestone_threshold,
     age_threshold,):
-    st.subheader(TEXT_LABELS["velocity_map_title"])
+
+    st.markdown(render_logo_with_title(TEXT_LABELS["velocity_map_title"]), unsafe_allow_html=True)
+
 
     y_min = min(40, df_scored["CompositeScore"].min())
     y_max = max(80, df_scored["CompositeScore"].max())
@@ -54,19 +57,21 @@ def render_velocity_map(df_scored,
             fig.add_vline(
                 x=first_met,
                 line=dict(color="#6a0dad", width=3, dash="dot"),
-                annotation_text=f"{met} {op_text} {milestone_threshold}",
-                annotation_position="top"
+                annotation_text=f"{met} {op_text} {milestone_threshold:.2f}",
+                annotation_position="top",
+                annotation=dict(yshift=10)
             )
     else:
         fig.add_vline(
             x=age_threshold,
             line=dict(color="#0070f3", width=3, dash="dot"),
             annotation_text="Early Stage Cutoff",
-            annotation_position="top"
+            annotation_position="top",
+            annotation=dict(yshift=10)
         )
 
     fig.add_hline(y=score_threshold, line=dict(color="black", width=3),
-                  annotation_text="Score Threshold", annotation_position="right")
+                  annotation_text="Score Threshold", annotation_position="right", annotation=dict(xshift=15))
 
     fig.update_layout(
         template="simple_white",
@@ -74,7 +79,7 @@ def render_velocity_map(df_scored,
         xaxis=dict(title=TEXT_LABELS["x_axis_label"], showgrid=True, gridcolor="rgba(0,0,0,0.15)", linecolor="black", mirror=True, dtick=2),
         yaxis=dict(title=TEXT_LABELS["y_axis_label"], showgrid=True, gridcolor="rgba(0,0,0,0.15)", linecolor="black", mirror=True, range=[y_min, y_max]),
         legend_title_text="Legend",
-        margin=dict(l=40, r=40, t=20, b=40),
+        margin=dict(l=40, r=40, t=30, b=40),
         clickmode="event+select"
     )
 

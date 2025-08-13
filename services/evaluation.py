@@ -4,21 +4,29 @@ import numpy as np
 import pandas as pd
 
 
-def _normalize(val:float,rule:dict)->float:
-    g,b,hib = rule["good"], rule["bad"], rule["hib"]
+def _normalize(val, rule: dict) -> float:
+    if not isinstance(rule, dict) or not all(k in rule for k in ("good", "bad", "hib")):
+        return np.nan
+    try:
+        val = float(val)
+    except (TypeError, ValueError):
+        return np.nan
     if np.isnan(val):
         return np.nan
 
-    if hib:
-        score = np.clip((val - b) / (g - b), 0, 1) * 100
-    else:
-        score = np.clip((b - val) / (b - g), 0, 1) * 100
-    return float(score)
+    g, b, hib = rule["good"], rule["bad"], rule["hib"]
+    denom = (g - b) if hib else (b - g)
+    if denom == 0 or pd.isna(denom):
+        return np.nan
+
+    score = ((val - b) / denom if hib else (b - val) / denom)
+    return float(np.clip(score, 0.0, 1.0) * 100.0)
+
 
 def _row_score(row: pd.Series, weights: Dict[str, float]) -> float:
     total, w_sum = 0.0, 0.0
     for m, w in weights.items():
-        if m not in row:
+        if m not in row or pd.isna(row[m]):
             continue
         score = _normalize(row[m], SCORING_RULES[m])
         if not np.isnan(score):
@@ -46,7 +54,13 @@ def evaluate(df, weights, age_threshold=12, score_threshold=60, milestone_config
     out["CompositeScore"] = out.apply(_row_score, axis=1, weights=weights)
 
     for m in weights:
-        out[f"S_{m}"] = out[m].apply(lambda v: _normalize(v, SCORING_RULES[m]))
+        if m in out.columns:
+            col_num = pd.to_numeric(out[m], errors="coerce")
+            out[f"S_{m}"] = col_num.apply(
+                lambda v: _normalize(v, SCORING_RULES[m])
+            ).fillna(0.0)
+        else:
+            out[f"S_{m}"] = 0.0
         out[f"W_{m}"] = weights[m] * 100
 
     def _weakest_metric(row):

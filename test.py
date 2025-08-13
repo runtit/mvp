@@ -4,7 +4,6 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from datetime import datetime
 
-# ========== 用户认证配置 ==========
 credentials = {
     "usernames": {
         "alice": {"name": "Alice", "password": stauth.Hasher.hash("12345")},
@@ -20,10 +19,9 @@ authenticator = stauth.Authenticate(
 
 st.title("Velocity Dashboard")
 
-# 渲染登录表单
 authenticator.login(location="main")
 
-# 从 session_state 获取状态
+
 auth_status = st.session_state.get("authentication_status")
 username = st.session_state.get("username")
 name = st.session_state.get("name")
@@ -40,7 +38,6 @@ if auth_status:
             "last_update": None
         }
 
-    # ========== 引入你的主逻辑 ==========
     from components.sidebar_milestone import render_milestone_controls
     from data_input import get_input_df
     from services.export_utils import png_to_pdf_bytes, generate_score_table, extract_diagnostic_info, detect_risks, build_full_pdf

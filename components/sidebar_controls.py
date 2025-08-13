@@ -39,6 +39,12 @@ def render_weights_and_thresholds(scoring_rules):
     norm_df = (pd.Series(norm_weights) * 100).round(1).to_frame("Effective %")
     st.sidebar.dataframe(norm_df, height=200)
 
-    age_threshold = st.sidebar.slider(" Early-Stage Cutoff (months)", 6, 24, 12, step=1)
+    age_threshold = st.sidebar.number_input(
+        "Early-Stage Cutoff (months)",
+        min_value=0,
+        max_value=None,
+        value=12,
+        step=1
+    )
 
     return weights, norm_weights, age_threshold

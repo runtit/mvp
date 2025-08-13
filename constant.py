@@ -62,7 +62,7 @@ DASHBOARD_TITLES = {
 }
 
 TEXT_LABELS = {
-    "velocity_map_title": " Velocity Map (Cartesian Quadrants)",
+    "velocity_map_title": " Scale Curves",
     "x_axis_label": "Startup Age (Months)",
     "y_axis_label": "Composite Score"
 }
