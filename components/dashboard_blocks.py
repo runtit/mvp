@@ -178,7 +178,6 @@ def render_block_for_pdf(df, title, metric_list, chart_type="line", height=280):
             height=height,
             color_discrete_sequence=CHART_COLOR_SCHEMES["pie"],
         )
-        fig.update_traces(textinfo="percent+label", hovertemplate="%{label}: %{percent} ")
 
     elif chart_type == "radar":
         latest = df.iloc[-1]

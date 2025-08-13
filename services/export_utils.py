@@ -93,7 +93,7 @@ class VelocityPDF(FPDF):
             self.ln()
 
     def add_all_blocks_to_pdf(self, df):
-        page_width = self.w - 2 * self.l_margin  # 可用宽度
+        page_width = self.w - 2 * self.l_margin
 
         for module, metrics in ALL_METRIC_CLUSTERS.items():
             title, png_bytes, diags = render_block_for_pdf(
@@ -124,7 +124,7 @@ class VelocityPDF(FPDF):
                     self.set_y(30)
 
                 y_before = self.get_y()
-                self.image(img_stream, x=self.l_margin, y=y_before, w=display_width, h=display_height)
+                self.image(img_stream, x=self.l_margin+5, y=y_before, w=display_width, h=display_height)
                 self.set_y(y_before + display_height + 5)
 
             if diags:
