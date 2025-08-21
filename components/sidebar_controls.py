@@ -11,11 +11,12 @@ def render_weights_and_thresholds(scoring_rules):
             st.session_state[f"w_{k}"] = v
         st.session_state["age_threshold"] = meta["age_threshold"]
 
+    for m in scoring_rules:
+        st.session_state.setdefault(f"w_{m}", 10)
+    st.session_state.setdefault("age_threshold", 12)
+
     weights = {
-        m: st.sidebar.slider(
-            m, 0, 100,
-            st.session_state.get(f"w_{m}", 10), 1, key=f"w_{m}"
-        )
+        m: st.sidebar.slider(m, 0, 100, key=f"w_{m}")
         for m in scoring_rules
     }
 
@@ -40,11 +41,7 @@ def render_weights_and_thresholds(scoring_rules):
     st.sidebar.dataframe(norm_df, height=200)
 
     age_threshold = st.sidebar.number_input(
-        "Early-Stage Cutoff (months)",
-        min_value=0,
-        max_value=None,
-        value=12,
-        step=1
+        "Early-Stage Cutoff (months)", min_value=0, step=1, key="age_threshold"
     )
 
     return weights, norm_weights, age_threshold
