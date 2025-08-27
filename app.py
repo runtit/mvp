@@ -47,6 +47,7 @@ else:
     if c1.button("Apply Snapshot"):
         st.session_state["snap_active"] = True
         st.session_state["snap_range"] = (int(start_m), int(end_m))
+        st.rerun()
 
     if c2.button("Clear"):
         st.session_state["snap_active"] = False
@@ -56,6 +57,9 @@ else:
         sm, em = st.session_state["snap_range"]
         mask = month_num.between(sm, em, inclusive="both")
         df = df.loc[mask].copy()
+        if "Month" in df.columns:
+            df = df.sort_values("Month")
+        df = df.reset_index(drop=True)
         st.caption(f"Snapshot active: Month {sm} → {em}")
 
 

@@ -79,7 +79,7 @@ def render_velocity_map(df_scored,
         xaxis=dict(title=TEXT_LABELS["x_axis_label"], showgrid=True, gridcolor="rgba(0,0,0,0.15)", linecolor="black", mirror=True, dtick=2),
         yaxis=dict(title=TEXT_LABELS["y_axis_label"], showgrid=True, gridcolor="rgba(0,0,0,0.15)", linecolor="black", mirror=True, range=[y_min, y_max]),
         legend_title_text="Legend",
-        margin=dict(l=40, r=40, t=30, b=40),
+        margin=dict(l=40, r=40, t=50, b=40),
         clickmode="event+select"
     )
 

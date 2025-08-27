@@ -32,7 +32,7 @@ def get_img_as_base64(file_path):
 
 def render_brand_logo(where="sidebar", width=100, return_html=False):
     theme = st.get_option("theme.base")
-    logo_path = "resources/logo_dark.jpg" if theme == "dark" else "resources/logo_light.jpg"
+    logo_path = "resources/logo_transparent_dark.png" if theme == "dark" else "resources/logo_transparent.png"
     logo_base64 = get_img_as_base64(logo_path)
     img_html = f"<img src='data:image/png;base64,{logo_base64}' width='{width}'>"
 
@@ -47,7 +47,7 @@ def render_brand_logo(where="sidebar", width=100, return_html=False):
 
 def render_logo_with_title(title):
     theme = st.get_option("theme.base")
-    logo_path = "resources/logo_dark.jpg" if theme == "dark" else "resources/logo_light.jpg"
+    logo_path = "resources/logo_dark.png" if theme == "dark" else "resources/logo_transparent.png"
     logo_base64 = get_img_as_base64(logo_path)
     return f"""
     <div style='display: flex; align-items: center; gap: 16px;'>
