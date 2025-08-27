@@ -97,7 +97,28 @@ def evaluate(df, weights, age_threshold=12, score_threshold=60, milestone_config
                 first_idx = met_indices[0]
                 out.loc[first_idx:, "_is_mature"] = True
     else:
-        out["_is_mature"] = out["Month"] >= age_threshold
+        # 修复：使用正确的逻辑判断成熟阶段
+        if "Month_Index" in out.columns:
+            # 使用 Month_Index：超过 age_threshold 的数据点为成熟阶段
+            out["_is_mature"] = out["Month_Index"] > age_threshold
+        else:
+            # 备用方案：基于 Month 列计算
+            if "Month" in out.columns and len(out) > 0:
+                # 从最早的月份开始计算
+                min_month = out["Month"].min()
+                # 计算 age_threshold 个月后的月份值
+                start_year = min_month // 100
+                start_m = min_month % 100
+
+                total_months = (start_year * 12 + start_m - 1) + age_threshold
+                cutoff_year = total_months // 12
+                cutoff_month = (total_months % 12) + 1
+                cutoff_yyyymm = cutoff_year * 100 + cutoff_month
+
+                out["_is_mature"] = out["Month"] > cutoff_yyyymm
+            else:
+                # 如果都没有，默认前几行为早期阶段
+                out["_is_mature"] = out.index > age_threshold
 
     def _label(r):
         if np.isnan(r["CompositeScore"]):

@@ -3,7 +3,7 @@
 import streamlit as st
 import pandas as pd
 
-def render_weights_and_thresholds(scoring_rules):
+def render_weights_and_thresholds(scoring_rules,df_scored):
     # Snapshot override
     if "_pending_snapshot" in st.session_state:
         meta = st.session_state.pop("_pending_snapshot")
@@ -13,7 +13,7 @@ def render_weights_and_thresholds(scoring_rules):
 
     for m in scoring_rules:
         st.session_state.setdefault(f"w_{m}", 10)
-    st.session_state.setdefault("age_threshold", 12)
+    #st.session_state.setdefault("age_threshold", 12)
 
     weights = {
         m: st.sidebar.slider(m, 0, 100, key=f"w_{m}")
@@ -40,8 +40,20 @@ def render_weights_and_thresholds(scoring_rules):
     norm_df = (pd.Series(norm_weights) * 100).round(1).to_frame("Effective %")
     st.sidebar.dataframe(norm_df, height=200)
 
+    if df_scored is not None and "Month_Index" in df_scored.columns:
+        smart_default = max(3, min(24, len(df_scored) // 3))
+        max_val = len(df_scored)
+    else:
+        smart_default = 15
+        max_val = 48
+
+    st.session_state.setdefault("age_threshold", smart_default)
     age_threshold = st.sidebar.number_input(
-        "Early-Stage Cutoff (months)", min_value=0, step=1, key="age_threshold"
+        "Age Threshold (months)",
+        min_value=0,  # 改为1而不是0
+        max_value=max_val,  # 动态最大值
+        step=1,
+        key="age_threshold"
     )
 
     return weights, norm_weights, age_threshold

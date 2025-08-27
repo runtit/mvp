@@ -71,7 +71,7 @@ st.success(f"Loaded {len(df)} rows ")
 with st.expander("View Raw Data"):
     st.dataframe(df, use_container_width=True)
 
-weights, norm_weights, age_threshold = render_weights_and_thresholds(SCORING_RULES)
+weights, norm_weights, age_threshold = render_weights_and_thresholds(SCORING_RULES, df)
 milestone_config = render_milestone_controls(df)
 score_threshold = 60
 
@@ -89,23 +89,10 @@ render_all_blocks(df)
 metric_cols = list(SCORING_RULES)
 customdata = build_customdata(df_scored, metric_cols)
 hover_tmpl = build_hovertemplate(metric_cols)
-
-seg_dict = build_trend_segments(df_scored)
-
-
 velocity_fig = render_velocity_map(
-    df_scored=df_scored,
-    customdata=customdata,
-    seg_dict=seg_dict,
-    hover_tmpl=hover_tmpl,
-    age_threshold=age_threshold,
-    score_threshold=score_threshold,
-    quadrant_config=QUADRANT_CONFIG,
-    trend_colors=TREND_COLORS,
-    use_milestone=milestone_config["enabled"],
-    milestone_field=milestone_config["field"],
-    milestone_op=milestone_config["op"],
-    milestone_threshold=milestone_config["threshold"],
+    df_scored, customdata, hover_tmpl, score_threshold,
+    QUADRANT_CONFIG, TREND_COLORS, milestone_config["enabled"], milestone_config["field"],
+    milestone_config["op"], milestone_config["threshold"], age_threshold
 )
 
 render_snapshot_controls(df_scored, weights, age_threshold)
