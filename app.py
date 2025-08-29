@@ -7,7 +7,6 @@ from services.export_utils import png_to_pdf_bytes, generate_score_table, extrac
 from services.utils import clean_df, render_brand_logo
 from constant import SCORING_RULES
 from services.scoring import compute_scores, build_customdata, build_hovertemplate
-from services.trend import build_trend_segments
 from components.dashboard_blocks import render_all_blocks
 from components.velocity_map import render_velocity_map
 from components.snapshots import render_snapshot_controls
@@ -31,36 +30,41 @@ if month_num is None or not month_num.notna().any():
     st.sidebar.caption("No valid numeric 'Month' found; snapshot disabled.")
     st.session_state.pop("snap_active", None)
     st.session_state.pop("snap_range", None)
+
 else:
-    min_m = int(month_num.min())
-    max_m = int(month_num.max())
+    valid_months = month_num.dropna().astype(int)
+    min_m, max_m = int(valid_months.min()), int(valid_months.max())
 
-    start_m, end_m = st.sidebar.slider(
-        "Select months (inclusive)",
-        min_value=min_m,
-        max_value=max_m,
-        value=(min_m, max_m),
-        step=1,
-    )
-
-    c1, c2 = st.sidebar.columns(2)
-    if c1.button("Apply Snapshot"):
+    if min_m == max_m:
+        st.sidebar.caption(f"Only one month available: {min_m}. Snapshot fixed to this month.")
+        start_m, end_m = min_m, max_m
         st.session_state["snap_active"] = True
-        st.session_state["snap_range"] = (int(start_m), int(end_m))
-        st.rerun()
+        st.session_state["snap_range"] = (start_m, end_m)
 
-    if c2.button("Clear"):
-        st.session_state["snap_active"] = False
-        st.session_state["snap_range"] = None
+    else:
+        start_m, end_m = st.sidebar.slider(
+            "Select months (inclusive)",
+            min_value=min_m,
+            max_value=max_m,
+            value=(min_m, max_m),
+            step=1,
+        )
 
-    if st.session_state.get("snap_active") and st.session_state.get("snap_range"):
-        sm, em = st.session_state["snap_range"]
-        mask = month_num.between(sm, em, inclusive="both")
-        df = df.loc[mask].copy()
-        if "Month" in df.columns:
-            df = df.sort_values("Month")
-        df = df.reset_index(drop=True)
-        st.caption(f"Snapshot active: Month {sm} → {em}")
+        c1, c2 = st.sidebar.columns(2)
+        if c1.button("Apply Snapshot"):
+            st.session_state["snap_active"] = True
+            st.session_state["snap_range"] = (int(start_m), int(end_m))
+            st.rerun()
+
+        if c2.button("Clear"):
+            st.session_state["snap_active"] = False
+            st.session_state["snap_range"] = None
+
+if st.session_state.get("snap_active") and st.session_state.get("snap_range"):
+    sm, em = st.session_state["snap_range"]
+    mask = pd.to_numeric(df["Month"], errors="coerce").between(sm, em, inclusive="both")
+    df = df.loc[mask].sort_values("Month").reset_index(drop=True)
+    st.caption(f"Snapshot active: Month {sm} → {em}")
 
 
 bad_rows = df["__row_has_nan"].sum()
@@ -121,10 +125,10 @@ with st.expander(" Export Reports & Scored Data"):
 
             pdf_bytes = build_full_pdf(png_bytes, score_table, quadrant, trend, composite_score, risks,df)
 
-            file_name = "velocity_map_diagnostic.pdf"
+            file_name = "scale_curves_diagnostic.pdf"
         else:
-            pdf_bytes = png_to_pdf_bytes(png_bytes, title="Velocity Map Report")
-            file_name = "velocity_map_simple.pdf"
+            pdf_bytes = png_to_pdf_bytes(png_bytes, title="Scale_Curves Report")
+            file_name = "Scale_Curves_Report.pdf"
 
         st.download_button(
             label="️ Download PDF",

@@ -35,7 +35,7 @@ def build_hovertemplate(metric_cols):
         "<b>Month %{x}</b><br>"
         "Composite %{customdata[1]:.1f}<br>"
         "<b>Quadrant → %{customdata[0]}</b><br>"
-        "🛠️ Lagging Metric: <b>%{customdata[2]}</b><br>"
+        "Lagging Metric: <b>%{customdata[2]}</b><br>"
         "<b>Metric / W% / Score</b><br>" +
         "<br>".join(lines) + "<extra></extra>"
     )

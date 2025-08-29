@@ -124,10 +124,6 @@ def _render_manual_form() -> None:
         )
 
 
-import pdfplumber
-import pandas as pd
-import streamlit as st
-
 def parse_pdf_flexible(upload_file, validate: bool = True) -> pd.DataFrame:
     if validate:
         with pdfplumber.open(upload_file) as pdf:
