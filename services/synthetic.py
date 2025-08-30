@@ -6,7 +6,7 @@ def generate_synthetic_company_data(
         seed: int = 40,
 )-> pd.DataFrame:
     rng = np.random.default_rng(seed)
-    start_date = "2023-01"  
+    start_date = "2023-01"
     months = pd.date_range(start=start_date, periods=24, freq='M').strftime('%Y-%m')
 
 

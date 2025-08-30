@@ -12,6 +12,8 @@ from components.velocity_map import render_velocity_map
 from components.snapshots import render_snapshot_controls
 from components.sidebar_controls import render_weights_and_thresholds
 from constant import TREND_COLORS, QUADRANT_CONFIG
+from services.utils import format_month_for_display
+
 
 render_brand_logo(where="sidebar", width=100)
 
@@ -32,26 +34,40 @@ if month_num is None or not month_num.notna().any():
     st.session_state.pop("snap_range", None)
 
 else:
-    valid_months = month_num.dropna().astype(int)
-    min_m, max_m = int(valid_months.min()), int(valid_months.max())
+    valid_months = month_num.dropna().astype(int).sort_values().tolist()
 
-    if min_m == max_m:
-        st.sidebar.caption(f"Only one month available: {min_m}. Snapshot fixed to this month.")
-        start_m, end_m = min_m, max_m
+    if len(valid_months) == 1:
+        month_val = valid_months[0]
+        st.sidebar.caption(f"Only one month available: {format_month_for_display(month_val)}")
         st.session_state["snap_active"] = True
-        st.session_state["snap_range"] = (start_m, end_m)
+        st.session_state["snap_range"] = (month_val, month_val)
 
     else:
-        start_m, end_m = st.sidebar.slider(
-            "Select months (inclusive)",
-            min_value=min_m,
-            max_value=max_m,
-            value=(min_m, max_m),
-            step=1,
+        # 创建月份选项
+        month_options = {format_month_for_display(m): m for m in valid_months}
+        month_labels = list(month_options.keys())
+
+        # 起始月份选择
+        start_label = st.sidebar.selectbox(
+            "Start Month",
+            options=month_labels,
+            index=0
+        )
+
+        # 结束月份选择（只显示起始月份之后的选项）
+        start_idx = month_labels.index(start_label)
+        end_options = month_labels[start_idx:]
+
+        end_label = st.sidebar.selectbox(
+            "End Month",
+            options=end_options,
+            index=len(end_options) - 1  # 默认选择最后一个
         )
 
         c1, c2 = st.sidebar.columns(2)
         if c1.button("Apply Snapshot"):
+            start_m = month_options[start_label]
+            end_m = month_options[end_label]
             st.session_state["snap_active"] = True
             st.session_state["snap_range"] = (int(start_m), int(end_m))
             st.rerun()
