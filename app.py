@@ -115,7 +115,7 @@ velocity_fig = render_velocity_map(
     milestone_config["op"], milestone_config["threshold"], age_threshold
 )
 
-render_snapshot_controls(df_scored, weights, age_threshold)
+#render_snapshot_controls(df_scored, weights, age_threshold)
 
 with st.expander(" Export Reports & Scored Data"):
     st.download_button(
