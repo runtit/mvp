@@ -9,7 +9,6 @@ from constant import SCORING_RULES
 from services.scoring import compute_scores, build_customdata, build_hovertemplate
 from components.dashboard_blocks import render_all_blocks
 from components.velocity_map import render_velocity_map
-from components.snapshots import render_snapshot_controls
 from components.sidebar_controls import render_weights_and_thresholds
 from constant import TREND_COLORS, QUADRANT_CONFIG
 from services.utils import format_month_for_display
