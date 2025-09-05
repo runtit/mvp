@@ -1,1 +1,1 @@
-streamlit run --browser.serverAddress $SERVER_NAME --server.port $PORT app.py
+streamlit run app.py --server.address 0.0.0.0 --server.port $PORT
