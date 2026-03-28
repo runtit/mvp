@@ -12,10 +12,9 @@ def build_trend_segments(df_scored):
 
 
 def build_trend_segments(df_scored):
-    # 确保数据排序
     if "Month_Index" in df_scored.columns:
         df_sorted = df_scored.sort_values("Month_Index").reset_index(drop=True)
-        x_col = "Month_Index"  # 关键改变！
+        x_col = "Month_Index"
     else:
         df_sorted = df_scored.sort_values("Month").reset_index(drop=True)
         x_col = "Month"
@@ -25,8 +24,8 @@ def build_trend_segments(df_scored):
     for i in range(len(df_sorted) - 1):
         trend = df_sorted.iloc[i + 1]["Trend"]
         seg_dict[trend]["x"] += [
-            df_sorted.iloc[i][x_col],  # 现在是 Month_Index
-            df_sorted.iloc[i + 1][x_col],  # 现在是 Month_Index
+            df_sorted.iloc[i][x_col],
+            df_sorted.iloc[i + 1][x_col],
             None
         ]
         seg_dict[trend]["y"] += [

@@ -1,25 +1,54 @@
 import streamlit as st
+import yaml
+from yaml.loader import SafeLoader
 
+from components.sidebar_controls import render_weights_and_thresholds
 from components.sidebar_milestone import render_milestone_controls
 from data_input import get_input_df
-from services.export_utils import png_to_pdf_bytes, generate_score_table, extract_diagnostic_info, detect_risks, \
-    build_full_pdf
+from services.export_utils import png_to_pdf_bytes, generate_score_table, extract_diagnostic_info, detect_risks, build_full_pdf
 from services.utils import clean_df, render_brand_logo
-from constant import SCORING_RULES
+from constant import SCORING_RULES, TREND_COLORS, QUADRANT_CONFIG
 from services.scoring import compute_scores, build_customdata, build_hovertemplate
 from components.dashboard_blocks import render_all_blocks
 from components.velocity_map import render_velocity_map
-from components.sidebar_controls import render_weights_and_thresholds
-from constant import TREND_COLORS, QUADRANT_CONFIG
-from services.utils import format_month_for_display
+import streamlit_authenticator as stauth
+import pandas as pd
 
+with open('config.yaml', 'r', encoding='utf-8') as file:
+    config = yaml.load(file, Loader=SafeLoader)
+
+authenticator = stauth.Authenticate(
+    config['credentials'],
+    config['cookie']['name'],
+    config['cookie']['key'],
+    config['cookie']['expiry_days'],
+)
+
+try:
+    authenticator.login()
+except Exception as e:
+    st.error(f"Auth error: {e}")
+    st.stop()
+
+auth_status = st.session_state.get('authentication_status', None)
+if auth_status is True:
+    with st.sidebar:
+        authenticator.logout(button_name="Logout", location="sidebar", key="logout_main", use_container_width=True)
+
+    st.write(f'Welcome **{st.session_state.get("name")}**')
+
+else:
+    if auth_status is False:
+        st.error('Username/password is incorrect')
+    else:
+        st.info("Please use your assigned account credentials.")
+        st.warning('Please enter your username and password')
+    st.stop()
 
 render_brand_logo(where="sidebar", width=100)
 
 df = get_input_df()
 df = clean_df(df)
-
-import pandas as pd
 
 st.sidebar.markdown("### Month Range (Snapshot)")
 
@@ -31,52 +60,36 @@ if month_num is None or not month_num.notna().any():
     st.sidebar.caption("No valid numeric 'Month' found; snapshot disabled.")
     st.session_state.pop("snap_active", None)
     st.session_state.pop("snap_range", None)
-
 else:
-    valid_months = month_num.dropna().astype(int).sort_values().tolist()
+    min_m = int(month_num.min())
+    max_m = int(month_num.max())
 
-    if len(valid_months) == 1:
-        month_val = valid_months[0]
-        st.sidebar.caption(f"Only one month available: {format_month_for_display(month_val)}")
+    start_m, end_m = st.sidebar.slider(
+        "Select months (inclusive)",
+        min_value=min_m,
+        max_value=max_m,
+        value=(min_m, max_m),
+        step=1,
+    )
+
+    c1, c2 = st.sidebar.columns(2)
+    if c1.button("Apply Snapshot"):
         st.session_state["snap_active"] = True
-        st.session_state["snap_range"] = (month_val, month_val)
+        st.session_state["snap_range"] = (int(start_m), int(end_m))
+        st.rerun()
 
-    else:
-        month_options = {format_month_for_display(m): m for m in valid_months}
-        month_labels = list(month_options.keys())
+    if c2.button("Clear"):
+        st.session_state["snap_active"] = False
+        st.session_state["snap_range"] = None
 
-        start_label = st.sidebar.selectbox(
-            "Start Month",
-            options=month_labels,
-            index=0
-        )
-
-        start_idx = month_labels.index(start_label)
-        end_options = month_labels[start_idx:]
-
-        end_label = st.sidebar.selectbox(
-            "End Month",
-            options=end_options,
-            index=len(end_options) - 1
-        )
-
-        c1, c2 = st.sidebar.columns(2)
-        if c1.button("Apply Snapshot"):
-            start_m = month_options[start_label]
-            end_m = month_options[end_label]
-            st.session_state["snap_active"] = True
-            st.session_state["snap_range"] = (int(start_m), int(end_m))
-            st.rerun()
-
-        if c2.button("Clear"):
-            st.session_state["snap_active"] = False
-            st.session_state["snap_range"] = None
-
-if st.session_state.get("snap_active") and st.session_state.get("snap_range"):
-    sm, em = st.session_state["snap_range"]
-    mask = pd.to_numeric(df["Month"], errors="coerce").between(sm, em, inclusive="both")
-    df = df.loc[mask].sort_values("Month").reset_index(drop=True)
-    st.caption(f"Snapshot active: Month {sm} → {em}")
+    if st.session_state.get("snap_active") and st.session_state.get("snap_range"):
+        sm, em = st.session_state["snap_range"]
+        mask = month_num.between(sm, em, inclusive="both")
+        df = df.loc[mask].copy()
+        if "Month" in df.columns:
+            df = df.sort_values("Month")
+        df = df.reset_index(drop=True)
+        st.caption(f"Snapshot active: Month {sm} → {em}")
 
 
 bad_rows = df["__row_has_nan"].sum()
@@ -111,8 +124,6 @@ velocity_fig = render_velocity_map(
     milestone_config["op"], milestone_config["threshold"], age_threshold
 )
 
-#render_snapshot_controls(df_scored, weights, age_threshold)
-
 with st.expander(" Export Reports & Scored Data"):
     st.download_button(
         label="️ Download Scored Data (CSV)",
@@ -137,10 +148,10 @@ with st.expander(" Export Reports & Scored Data"):
 
             pdf_bytes = build_full_pdf(png_bytes, score_table, quadrant, trend, composite_score, risks,df)
 
-            file_name = "scale_curves_diagnostic.pdf"
+            file_name = "velocity_map_diagnostic.pdf"
         else:
-            pdf_bytes = png_to_pdf_bytes(png_bytes, title="Scale_Curves Report")
-            file_name = "Scale_Curves_Report.pdf"
+            pdf_bytes = png_to_pdf_bytes(png_bytes, title="Velocity Map Report")
+            file_name = "velocity_map_simple.pdf"
 
         st.download_button(
             label="️ Download PDF",
